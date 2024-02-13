@@ -1,6 +1,7 @@
 import { generateRegistrationOptions, verifyRegistrationResponse } from "@simplewebauthn/server";
-import { PrismaClient } from "@prisma/client";
 import { withSession } from "@/app/lib/session";
+import db from "@/db/db";
+import { users, credentials } from "@/db/schema";
 
 // Human-readable title for your website
 const rpName = "SimpleWebAuthn Example";
@@ -8,7 +9,6 @@ const rpName = "SimpleWebAuthn Example";
 const rpID = "localhost";
 // The origin of your website
 const origin = "http://localhost:3000";
-const prisma = new PrismaClient();
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -25,10 +25,8 @@ export async function GET(request: Request) {
   }
 
   // Check if email is not already registered
-  const user = await prisma.user.findUnique({
-    where: {
-      email: email,
-    },
+  const user = await db.query.users.findFirst({
+    where: (users, { eq }) => eq(users.email, email),
   });
   if (user) {
     return new Response(JSON.stringify({ error: "Email already registered" }), {
@@ -41,8 +39,7 @@ export async function GET(request: Request) {
     const options = await generateRegistrationOptions({
       rpName,
       rpID,
-      // Random UUID to prevent browser fingerprinting
-      userID: crypto.randomUUID(),
+      userID: process.env.SECRET_USER_ID!,
       userName: email,
       // Don't prompt users for additional information about the authenticator
       // (Recommended for smoother UX)
@@ -85,7 +82,7 @@ export async function POST(request: Request) {
       expectedOrigin: origin,
       expectedRPID: "localhost",
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 400,
@@ -98,21 +95,29 @@ export async function POST(request: Request) {
   const { verified } = verification;
 
   // If verified, create a new user
-  if (verified) {
+  if (verified && verification.registrationInfo) {
     const { registrationInfo } = verification;
     const { credentialPublicKey, credentialID } = registrationInfo;
 
-    await prisma.user.create({
-      data: {
-        email: session.email,
-        credentials: {
-          create: {
-            externalId: Buffer.from(credentialID),
-            publicKey: Buffer.from(credentialPublicKey),
-          },
-        },
-      },
+    // Create a new user in the database if it doesn't exist
+    await db
+      .insert(users)
+      .values({
+        email: session.email!,
+        id: process.env.SECRET_USER_ID!,
+      })
+      .onConflictDoNothing();
+
+    // Create a new credential in the database
+    await db.insert(credentials).values({
+      externalId: credentialID,
+      publicKey: credentialPublicKey,
+      userId: process.env.SECRET_USER_ID!,
     });
+
+    session.destroy();
+    session.user = process.env.SECRET_USER_ID!;
+    await session.save();
   }
 
   return new Response(JSON.stringify({ verified }), {

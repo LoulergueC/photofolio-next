@@ -12,3 +12,10 @@ const sessionOptions: SessionOptions = {
 export async function withSession() {
   return await getIronSession(cookies(), sessionOptions);
 }
+
+declare module "iron-session" {
+  interface IronSession<T> {
+    challenge: string; // or the appropriate type
+    email: string;
+  }
+}

@@ -6,25 +6,34 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "migrate:generate": "drizzle-kit generate:sqlite",
+    "migrate:push": "node -r esbuild-register ./src/db/migrate.ts",
+    "migrate": "drizzle-kit generate:sqlite && node -r esbuild-register ./src/db/migrate.ts",
+    "migrate:drop": "drizzle-kit drop",
+    "migrate:reset": "rm -rf ./drizzle && rm ./src/db/sqlite.db && drizzle-kit generate:sqlite && node -r esbuild-register ./src/db/migrate.ts"
   },
   "dependencies": {
-    "@prisma/client": "5.9.1",
     "@simplewebauthn/browser": "^9.0.1",
     "@simplewebauthn/server": "^9.0.1",
     "@simplewebauthn/types": "^9.0.1",
+    "better-sqlite3": "^9.4.1",
+    "drizzle-orm": "^0.29.3",
     "iron-session": "^8.0.1",
     "next": "14.1.0",
     "react": "^18",
     "react-dom": "^18"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.9",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "drizzle-kit": "^0.20.14",
+    "esbuild": "^0.20.0",
+    "esbuild-register": "^3.5.0",
     "eslint": "^8",
     "eslint-config-next": "14.1.0",
-    "prisma": "^5.9.1",
     "typescript": "^5"
   }
 }

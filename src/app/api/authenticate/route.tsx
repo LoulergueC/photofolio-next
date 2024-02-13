@@ -2,10 +2,11 @@ import {
   generateAuthenticationOptions,
   verifyAuthenticationResponse,
 } from "@simplewebauthn/server";
-import { PrismaClient } from "@prisma/client";
 import { withSession } from "@/app/lib/session";
+import db from "@/db/db";
+import { credentials } from "@/db/schema";
+import { eq } from "drizzle-orm";
 
-const prisma = new PrismaClient();
 // Human-readable title for your website
 const rpName = "SimpleWebAuthn Example";
 // A unique identifier for your website
@@ -14,19 +15,20 @@ const rpID = "localhost";
 const origin = "http://localhost:3000";
 
 export async function GET() {
-  // catch the only user in the database
-  const user = await prisma.user.findFirst();
-  const userCrendentials = await prisma.credential.findMany({
-    where: {
-      userId: user?.id,
+  // catch the user in the database defined by the unique ID in the .env
+  // and retrieve their credentials from the database
+  const userCredentials = await db.query.credentials.findMany({
+    where: (credentials, { eq }) => eq(credentials.userId, process.env.SECRET_USER_ID!),
+    columns: {
+      externalId: true,
     },
   });
 
   const options = await generateAuthenticationOptions({
     rpID,
     userVerification: "preferred",
-    allowCredentials: userCrendentials.map((credential) => ({
-      id: Buffer.from(credential.externalId),
+    allowCredentials: userCredentials.map((credential) => ({
+      id: credential.externalId,
       type: "public-key",
     })),
   });
@@ -50,9 +52,12 @@ export async function POST(request: Request) {
   const session = await withSession();
   const expectedChallenge = session.challenge;
 
-  const authenticator = await prisma.credential.findFirst({
-    where: {
-      externalId: Buffer.from(body.id, "base64"),
+  const authenticator = await db.query.credentials.findFirst({
+    where: (credentials, { eq }) => eq(credentials.externalId, Buffer.from(body.id, "base64")),
+    columns: {
+      externalId: true,
+      publicKey: true,
+      signCount: true,
     },
   });
 
@@ -78,7 +83,7 @@ export async function POST(request: Request) {
         counter: authenticator.signCount,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 400,
@@ -93,20 +98,14 @@ export async function POST(request: Request) {
   // If verified, create a new session for the logged user
   // And increment the signCount in the db
   if (verified) {
-    await prisma.credential.update({
-      where: {
-        id: authenticator.id,
-      },
-      data: {
-        signCount: {
-          increment: 1,
-        },
-      },
-    });
+    await db
+      .update(credentials)
+      .set({ signCount: authenticator.signCount + 1 })
+      .where(eq(credentials.id, authenticator.externalId));
 
     const session = await withSession();
     session.user = {
-      id: authenticator.userId,
+      id: process.env.SECRET_USER_ID!,
     };
     await session.save();
   }
