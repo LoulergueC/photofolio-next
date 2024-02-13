@@ -1,16 +1,23 @@
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { NextRequest } from "next/server";
 import { withSession } from "@/app/lib/session";
 
-// This function can be marked `async` if using `await` inside
 export async function middleware(request: NextRequest) {
   const session = await withSession();
-  if (!session?.user) {
+
+  // Redirect to login if not authenticated
+  if (!session?.user && request.nextUrl.pathname === "/admin") {
     return NextResponse.redirect(new URL("/admin/login", request.url));
+  }
+  if (
+    session.user &&
+    (request.nextUrl.pathname === "/admin/login" || request.nextUrl.pathname === "/admin/register")
+  ) {
+    return NextResponse.redirect(new URL("/admin", request.url));
   }
 }
 
 // See "Matching Paths" below to learn more
 export const config = {
-  matcher: "/admin",
+  matcher: "/(admin/*.*)",
 };

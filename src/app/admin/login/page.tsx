@@ -1,7 +1,12 @@
 "use client";
 import { startAuthentication } from "@simplewebauthn/browser";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function Login() {
+  const router = useRouter();
+  const [error, setError] = useState("");
+
   const goLogin = async () => {
     const resp = await fetch("/api/authenticate");
 
@@ -9,7 +14,8 @@ export default function Login() {
     try {
       // Pass the options to the authenticator and wait for a response
       asseResp = await startAuthentication(await resp.json());
-    } catch (error) {
+    } catch (error: any) {
+      setError(error.message);
       throw error;
     }
 
@@ -26,8 +32,9 @@ export default function Login() {
 
     // Show UI appropriate for the `verified` status
     if (verificationJSON && verificationJSON.verified) {
-      alert("Success!");
+      router.push("/admin");
     } else {
+      setError(verificationJSON.error);
       console.log(JSON.stringify(verificationJSON));
     }
   };
@@ -36,6 +43,7 @@ export default function Login() {
     <>
       <h1>Login</h1>
       <button onClick={goLogin}>Login</button>
+      {error && <p style={{ color: "red" }}>{error}</p>}
     </>
   );
 }
