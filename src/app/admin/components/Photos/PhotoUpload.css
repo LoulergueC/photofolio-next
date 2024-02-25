@@ -1,0 +1,124 @@
+#photos_preview {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+  gap: 4rem;
+}
+.photo-container {
+  display: flex;
+  justify-content: space-between;
+  width: fit-content;
+  position: relative;
+  flex: 0 1;
+  max-width: min(100%, 600px);
+  min-width: max(300px, 25%);
+  margin: 3rem 6rem;
+}
+.photo-container img {
+  width: 100%;
+  height: auto;
+  border-radius: 1rem;
+  box-shadow: 0px 30px 40px rgb(0 0 0 / 25%);
+}
+.photo-container .photo-details,
+.photo-container .camera-details {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.3);
+  padding: 0.5rem;
+  border-radius: 1rem;
+  backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: 0 20px 30px rgb(0 0 0 / 25%);
+}
+.photo-container .photo-details {
+  text-align: center;
+  top: 0;
+  left: 0;
+  transform: translate(-50%, -50%);
+  gap: 0.5rem;
+}
+.photo-container .camera-details {
+  bottom: 0;
+  right: 0;
+  transform: translate(50%, 50%);
+}
+.photo-container .photo-details > div,
+.photo-container .camera-details > div {
+  display: flex;
+  gap: 0.5rem;
+}
+.photo-container .photo-details p,
+.photo-container .camera-details p {
+  margin: 0;
+  font-size: 0.8rem;
+  padding: 2px;
+}
+.photo-container .photo-details input,
+.photo-container .photo-details textarea {
+  text-align: center;
+  resize: none;
+}
+.photo-container input,
+.photo-container textarea {
+  background: none;
+  border: none;
+  color: white;
+  width: 100%;
+  font-family: sans-serif;
+}
+.photo-container input:focus-visible,
+.photo-container textarea:focus-visible {
+  outline: none;
+  border-radius: 1rem;
+  box-shadow: 0px 10px 30px 0px #16161642;
+}
+.photo-container .photo-details textarea::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+.photo-container label svg {
+  height: 20px;
+  width: auto;
+}
+
+.photo-container .delete {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 25px;
+  width: 25px;
+  cursor: pointer;
+  border-radius: 50%;
+  background-color: rgba(40, 40, 40, 0.222);
+  transform: translate(30%, -30%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: 0 20px 30px rgb(0 0 0 / 25%);
+  transition: 0.2s ease;
+  opacity: 0.7;
+}
+
+.photo-container:hover .delete {
+  background-color: red;
+  opacity: 1;
+}
+.photo-container .delete:hover {
+  transform: translate(30%, -30%) scale(1.2) rotate(90deg);
+  box-shadow: 20px 0 30px rgb(0 0 0 / 25%);
+}
+.photo-container .delete > div {
+  position: absolute;
+  width: 50%;
+  height: 1px;
+  background-color: white;
+  top: 50%;
+  left: 50%;
+}
+.photo-container .delete > div:nth-child(1) {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+.photo-container .delete > div:nth-child(2) {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}

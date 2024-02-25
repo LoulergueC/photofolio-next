@@ -13,6 +13,11 @@ export async function withSession() {
   return await getIronSession(cookies(), sessionOptions);
 }
 
+export async function logout() {
+  const session = await withSession();
+  session.destroy();
+}
+
 declare module "iron-session" {
   interface IronSession<T> {
     challenge: string; // or the appropriate type
