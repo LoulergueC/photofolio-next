@@ -1,0 +1,7 @@
+a {
+  color: inherit;
+}
+a:hover {
+  color: var(--primary, #4b4b4b);
+  text-shadow: 0 3px 40px rgba(0, 0, 0, 0.3);
+}

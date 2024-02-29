@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Hanken_Grotesk } from "next/font/google";
+import Breadcrumb from "./components/Navbar/Breadcrumb";
+import "./layout.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const fontFamily = Hanken_Grotesk({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -15,7 +17,10 @@ export default function AdminLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={fontFamily.className}>
+        <Breadcrumb />
+        {children}
+      </body>
     </html>
   );
 }

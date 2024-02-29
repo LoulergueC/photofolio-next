@@ -1,0 +1,24 @@
+.register__form {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem 1rem;
+  max-width: 600px;
+  margin: 3rem auto;
+  padding: 3rem 0;
+}
+
+.register__form input {
+  border: 1px solid black;
+  padding: 0.75rem 1rem;
+  border-radius: 1rem;
+  font-size: 1rem;
+  line-height: 2rem;
+  font-family: inherit;
+  font-weight: 200;
+  flex: 1 1;
+}
+
+.register__form button {
+  font-size: 1.5rem;
+}

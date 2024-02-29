@@ -3,6 +3,10 @@ import { useEffect, useState } from "react";
 import { browserSupportsWebAuthn, startRegistration } from "@simplewebauthn/browser";
 import { useRouter } from "next/navigation";
 import ErrorDisplay from "../components/Errors/ErrorDisplay";
+import Header from "../components/Header/Header";
+import Link from "next/link";
+import Button from "../components/Button/Button";
+import "./Register.css";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -85,23 +89,37 @@ export default function Register() {
 
   return (
     <>
-      <h1>Register Account</h1>
       <ErrorDisplay error={error} setError={setError} />
-      {isAvailable ? (
-        <form onSubmit={handleSubmit}>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            placeholder="Email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-          />
-          <input type="submit" value="Register" />
-        </form>
-      ) : (
-        <p>Your browser does not support WebAuthn.</p>
-      )}
+      <Header
+        subtitle={"Dashboard"}
+        leftEl={"🙌"}
+        rightEl={"🥳"}
+        desc={
+          <>
+            Create your passkey. <br />
+            Maybe you need to <Link href="/admin/login">Login</Link>
+          </>
+        }>
+        Register
+      </Header>
+      <form onSubmit={handleSubmit} className="register__form">
+        {isAvailable ? (
+          <>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              placeholder="Email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              required
+            />
+            <Button type="submit">Register</Button>
+          </>
+        ) : (
+          <p>Your browser does not support WebAuthn.</p>
+        )}
+      </form>
     </>
   );
 }

@@ -3,6 +3,9 @@ import { startAuthentication } from "@simplewebauthn/browser";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import ErrorDisplay from "../components/Errors/ErrorDisplay";
+import Header from "../components/Header/Header";
+import Link from "next/link";
+import Button from "../components/Button/Button";
 
 export default function Login() {
   const router = useRouter();
@@ -46,9 +49,23 @@ export default function Login() {
 
   return (
     <>
-      <h1>Login</h1>
       <ErrorDisplay error={error} setError={setError} />
-      <button onClick={goLogin}>Login</button>
+      <Header
+        subtitle={"Dashboard"}
+        rightEl={"👋"}
+        desc={
+          <>
+            Connect with your passkey. <br />
+            Maybe you need to <Link href="/admin/register">Register</Link>
+          </>
+        }>
+        Login
+      </Header>
+      <div>
+        <Button onClick={goLogin} style={{ margin: "auto" }}>
+          Login
+        </Button>
+      </div>
     </>
   );
 }

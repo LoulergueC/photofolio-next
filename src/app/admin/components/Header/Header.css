@@ -1,0 +1,50 @@
+.header {
+  width: min-content;
+  margin: 4rem auto;
+  color: #222;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.header__top {
+  position: relative;
+}
+
+.header__title {
+  font-size: clamp(4rem, 10vw, 10rem);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5rem;
+  margin: auto;
+  min-width: max-content;
+}
+
+.header__left,
+.header__right {
+  position: absolute;
+  font-size: clamp(3rem, 5vw, 5rem);
+  text-shadow: 0 20px 30px rgba(0, 0, 0, 0.2);
+}
+
+.header__left {
+  z-index: -1;
+  transform: rotate(-20deg) translate(-50%, -30%);
+  top: 0;
+  left: 0;
+}
+
+.header__right {
+  transform: translate(50%, 20%);
+  bottom: 0;
+  right: 0;
+}
+
+.header__subtitle {
+  font-size: 0.9rem;
+}
+
+.header__bottom {
+  font-size: 1.1rem;
+}
