@@ -2,6 +2,7 @@
 import { startAuthentication } from "@simplewebauthn/browser";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import ErrorDisplay from "../components/Errors/ErrorDisplay";
 
 export default function Login() {
   const router = useRouter();
@@ -9,6 +10,11 @@ export default function Login() {
 
   const goLogin = async () => {
     const resp = await fetch("/api/authenticate");
+
+    if (!resp.ok) {
+      router.push("/admin/register");
+      return;
+    }
 
     let asseResp;
     try {
@@ -35,15 +41,14 @@ export default function Login() {
       router.push("/admin");
     } else {
       setError(verificationJSON.error);
-      console.log(JSON.stringify(verificationJSON));
     }
   };
 
   return (
     <>
       <h1>Login</h1>
+      <ErrorDisplay error={error} setError={setError} />
       <button onClick={goLogin}>Login</button>
-      {error && <p style={{ color: "red" }}>{error}</p>}
     </>
   );
 }

@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { browserSupportsWebAuthn, startRegistration } from "@simplewebauthn/browser";
 import { useRouter } from "next/navigation";
+import ErrorDisplay from "../components/Errors/ErrorDisplay";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -19,36 +20,6 @@ export default function Register() {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
-    // const generateRegistrationOptions = await fetch("/api/register?email=" + email);
-
-    // let attResp;
-    // try {
-    //   // Pass the options to the authenticator and wait for a response
-    //   attResp = await startRegistration(await generateRegistrationOptions.json());
-    // } catch (error) {
-    //   throw error;
-    // }
-
-    // console.log(attResp);
-
-    // const verificationResp = await fetch("/api/register", {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify(attResp),
-    // });
-
-    // // Wait for the results of verification
-    // const verificationJSON = await verificationResp.json();
-
-    // // Show UI appropriate for the `verified` status
-    // if (verificationJSON && verificationJSON.verified) {
-    //   alert("Success!");
-    // } else {
-    //   console.log(JSON.stringify(verificationJSON));
-    // }
 
     fetch("/api/register?email=" + email)
       .then((response) => {
@@ -115,8 +86,9 @@ export default function Register() {
   return (
     <>
       <h1>Register Account</h1>
+      <ErrorDisplay error={error} setError={setError} />
       {isAvailable ? (
-        <form method="POST" onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit}>
           <input
             type="email"
             id="email"
@@ -130,7 +102,6 @@ export default function Register() {
       ) : (
         <p>Your browser does not support WebAuthn.</p>
       )}
-      {error && <p style={{ color: "red" }}>{error}</p>}
     </>
   );
 }

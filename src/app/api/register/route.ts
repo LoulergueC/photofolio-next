@@ -1,14 +1,13 @@
 import { generateRegistrationOptions, verifyRegistrationResponse } from "@simplewebauthn/server";
 import { withSession } from "@/app/lib/session";
 import db from "@/db/db";
-import { users, credentials } from "@/db/schema";
 
 // Human-readable title for your website
-const rpName = "SimpleWebAuthn Example";
+const rpName = process.env.WA_RPNAME!;
 // A unique identifier for your website
-const rpID = "localhost";
+const rpID = process.env.WA_RPID!;
 // The origin of your website
-const origin = "http://localhost:3000";
+const origin = process.env.WA_ORIGIN!;
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -25,8 +24,10 @@ export async function GET(request: Request) {
   }
 
   // Check if email is not already registered
-  const user = await db.query.users.findFirst({
-    where: (users, { eq }) => eq(users.email, email),
+  const user = await db.user.findUnique({
+    where: {
+      id: process.env.SECRET_USER_ID!,
+    },
   });
   if (user) {
     return new Response(JSON.stringify({ error: "Email already registered" }), {
@@ -41,12 +42,8 @@ export async function GET(request: Request) {
       rpID,
       userID: process.env.SECRET_USER_ID!,
       userName: email,
-      // Don't prompt users for additional information about the authenticator
-      // (Recommended for smoother UX)
       attestationType: "none",
-      // See "Guiding use of authenticators via authenticatorSelection" below
       authenticatorSelection: {
-        // Defaults
         residentKey: "preferred",
         userVerification: "preferred",
       },
@@ -99,20 +96,18 @@ export async function POST(request: Request) {
     const { registrationInfo } = verification;
     const { credentialPublicKey, credentialID } = registrationInfo;
 
-    // Create a new user in the database if it doesn't exist
-    await db
-      .insert(users)
-      .values({
-        email: session.email!,
+    // Create a new user in the database
+    await db.user.create({
+      data: {
         id: process.env.SECRET_USER_ID!,
-      })
-      .onConflictDoNothing();
-
-    // Create a new credential in the database
-    await db.insert(credentials).values({
-      externalId: credentialID,
-      publicKey: credentialPublicKey,
-      userId: process.env.SECRET_USER_ID!,
+        email: session.email,
+        credentials: {
+          create: {
+            externalId: Buffer.from(credentialID),
+            publicKey: Buffer.from(credentialPublicKey),
+          },
+        },
+      },
     });
 
     session.destroy();

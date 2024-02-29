@@ -1,0 +1,9 @@
+.error {
+  margin: 1rem auto;
+  max-width: 600px;
+  padding: 1rem;
+  border-radius: 1rem;
+  background-color: #ff5655;
+  color: white;
+  box-shadow: 0 20px 40px rgba(0,0,0,.2);
+}
