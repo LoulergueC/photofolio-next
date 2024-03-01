@@ -9,6 +9,7 @@ import isoIcon from "../../../../../public/icons/iso.svg";
 import modelIcon from "../../../../../public/icons/camera.svg";
 import apertureIcon from "../../../../../public/icons/aperture.svg";
 import exposureTimeIcon from "../../../../../public/icons/timer.svg";
+import Button from "../Button/Button";
 
 export default function PhotoUpload() {
   const [photos, setPhotos] = useState<Photo[]>([]);
@@ -35,12 +36,31 @@ export default function PhotoUpload() {
         return false;
       });
 
+      const reader = (file: File): Promise<ArrayBuffer | null | string> =>
+        new Promise((resolve, reject) => {
+          const fr = new FileReader();
+          fr.onload = () => resolve(fr.result);
+          fr.onerror = (err) => reject(err);
+          fr.readAsArrayBuffer(file);
+        });
+
       const promises = cleanedPhotos.map(async (photo) => {
         const exif = await extractExif(photo);
 
         const { model, aperture, exposureTime, iso, description } = exif;
+
+        const arrayBuffer = await reader(photo);
+
+        if (!arrayBuffer || typeof arrayBuffer === "string") {
+          setErrors((prevErrors) => {
+            return [...prevErrors, `${photo.name} could not be read`];
+          });
+          throw new Error(`${photo.name} could not be read`);
+        }
+
         return {
           blob: URL.createObjectURL(photo),
+          buffer: Buffer.from(arrayBuffer),
           name: photo.name,
           description: description,
           id: id,
@@ -52,11 +72,10 @@ export default function PhotoUpload() {
         };
       });
 
-      // Use Promise.all to wait for all promises to resolve
       const photosObjects = await Promise.all(promises);
-
-      // Now you can safely set the photos state with the resolved values
       setPhotos((prevPhotos) => [...prevPhotos, ...photosObjects]);
+
+      event.target.value = "";
     }
   };
 
@@ -106,6 +125,17 @@ export default function PhotoUpload() {
     );
   };
 
+  const upload = async () => {
+    const response = await fetch("/api/photos", {
+      method: "POST",
+      body: JSON.stringify(photos),
+    });
+
+    if (response.ok) {
+      setPhotos([]);
+    }
+  };
+
   return (
     <>
       <div>
@@ -117,16 +147,31 @@ export default function PhotoUpload() {
           </div>
         )}
         <h1>Photo Upload</h1>
-        <label htmlFor="photos_uploader">Upload Photos</label>
-        <input
-          type="file"
-          accept="image/*"
-          multiple
-          onChange={addPhotos}
-          name="photos"
-          id="photos_uploader"
-          style={{ display: "none" }}
-        />
+        <div
+          className={"photo_uploader_container" + (photos.length > 0 ? " already_uploaded" : "")}>
+          <label htmlFor="photos_uploader">
+            <h2>Select {photos?.length > 0 ? "other" : ""} photos</h2>
+            {photos?.length > 0 ? (
+              <p>
+                {photos.length} {photos.length === 1 ? "photo" : "photos"} uploaded
+              </p>
+            ) : (
+              <p>
+                By clicking here
+                <br />
+                or drag and drop
+              </p>
+            )}
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/jpg"
+              multiple
+              onChange={addPhotos}
+              id="photos_uploader"
+              name="photos_uploader"
+            />
+          </label>
+        </div>
         <div id="photos_preview">
           {photos &&
             photos.map((photo: Photo) => (
@@ -148,6 +193,7 @@ export default function PhotoUpload() {
                       data-id={photo.id}
                       onChange={handleInputChange}
                       value={photo.name}
+                      size={photo.name.length || 2}
                     />
                   </div>
                   <div>
@@ -157,6 +203,8 @@ export default function PhotoUpload() {
                       id="description"
                       data-id={photo.id}
                       onChange={handleInputChange}
+                      rows={3}
+                      cols={30}
                       value={photo.description}></textarea>
                   </div>
                 </div>
@@ -173,6 +221,7 @@ export default function PhotoUpload() {
                       data-id={photo.id}
                       onChange={handleInputChange}
                       value={photo.model}
+                      size={photo.model.length || 2}
                     />
                   </div>
                   <div>
@@ -186,6 +235,7 @@ export default function PhotoUpload() {
                       data-id={photo.id}
                       onChange={handleInputChange}
                       value={photo.aperture}
+                      size={photo.aperture.length || 2}
                     />
                   </div>
                   <div>
@@ -195,10 +245,11 @@ export default function PhotoUpload() {
                     <input
                       type="text"
                       name="exposureTime"
-                      id="exposure"
+                      id="exposureTime"
                       data-id={photo.id}
                       onChange={handleInputChange}
                       value={photo.exposureTime}
+                      size={photo.exposureTime.length || 2}
                     />
                   </div>
                   <div>
@@ -212,19 +263,28 @@ export default function PhotoUpload() {
                       data-id={photo.id}
                       onChange={handleInputChange}
                       value={photo.iso}
+                      size={photo.iso.length || 2}
                     />
                   </div>
                 </div>
               </div>
             ))}
         </div>
+        {photos.length > 0 && (
+          <div style={{ textAlign: "center", margin: "6rem 0" }}>
+            <Button className="upload_button" onClick={upload} style={{ margin: "auto" }}>
+              Upload photo{photos.length > 1 ? "s" : ""}
+            </Button>
+          </div>
+        )}
       </div>
     </>
   );
 }
 
-interface Photo {
+export interface Photo {
   blob: string;
+  buffer: Buffer;
   name: string;
   description: string;
   id: string;
