@@ -4,6 +4,7 @@
   opacity: 0.8;
   font-size: 0.8rem;
   margin: 1rem;
+  justify-content: space-between;
 }
 .breadcrumb a {
   text-decoration: none;

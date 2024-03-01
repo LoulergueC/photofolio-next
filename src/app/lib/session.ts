@@ -7,6 +7,7 @@ const sessionOptions: SessionOptions = {
   cookieOptions: {
     secure: process.env.NODE_ENV === "production",
   },
+  ttl: 60 * 60 * 24,
 };
 
 export async function withSession() {
@@ -16,6 +17,11 @@ export async function withSession() {
 export async function logout() {
   const session = await withSession();
   session.destroy();
+}
+
+export async function isLoggedIn() {
+  const session = await withSession();
+  return !!session.user;
 }
 
 declare module "iron-session" {

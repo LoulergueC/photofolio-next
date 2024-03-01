@@ -20,14 +20,28 @@ export default function Breadcrumb() {
     return acc;
   }, []);
 
+  const logout = async () => {
+    await fetch("/api/session", {
+      method: "DELETE",
+    });
+  };
+
   return (
     <div className="breadcrumb">
-      <Link href="/">Home/</Link>
-      {breadcrumbLinks?.map((breadcrumb, index) => (
-        <Link key={index} href={breadcrumb.href}>
-          {breadcrumb.name}/
+      <div>
+        <Link href="/">Home/</Link>
+        {breadcrumbLinks?.map((breadcrumb, index) => (
+          <Link key={index} href={breadcrumb.href}>
+            {breadcrumb.name}/
+          </Link>
+        ))}
+      </div>
+
+      {pathname !== "/admin/login" && pathname !== "/admin/register" && (
+        <Link href="/admin/login" onClick={logout}>
+          Logout
         </Link>
-      ))}
+      )}
     </div>
   );
 }
