@@ -1,5 +1,6 @@
 import { tagsAtom } from "@/app/lib/atoms/tagsAtom";
 import { useAtom } from "jotai";
+import { useState } from "react";
 import { Tag } from "./PhotoUpload";
 import Button from "../Button/Button";
 
@@ -15,12 +16,35 @@ export default function TagsModal({
   setDisplayTagsModal: any;
 }) {
   const [tags, setTags] = useAtom(tagsAtom);
+  const [addTag, setAddTag] = useState(false);
 
   if (!tags.length) {
     fetch("/api/tags")
       .then((res) => res.json())
       .then((tags) => setTags(tags));
   }
+
+  const addTagHandler = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const tagName = (e.currentTarget.querySelector('input[name="tagName"]') as HTMLInputElement)
+      .value;
+    if (!tagName) return setAddTag(false);
+
+    fetch("/api/tags", {
+      method: "POST",
+      body: JSON.stringify({
+        name: tagName,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setAddTag(false);
+        setTags([...tags, data]);
+      });
+
+    // TODO: Add error handling
+  };
 
   return (
     <div className="tags__modal">
@@ -45,7 +69,21 @@ export default function TagsModal({
           ))
         : "No tags found"}
       <div className="tags__modal__footer">
-        <Button onClick={() => setDisplayTagsModal(false)}>Save</Button>
+        {addTag ? (
+          <form onSubmit={addTagHandler}>
+            <input type="text" name="tagName" placeholder="Tag Name" />
+            <Button type="submit" fontSize={"1rem"}>
+              Add
+            </Button>
+          </form>
+        ) : (
+          <Button onClick={() => setAddTag(true)} prefix="+" fontSize={"1rem"}>
+            Tag
+          </Button>
+        )}
+        <Button onClick={() => setDisplayTagsModal(false)} fontSize={"1rem"}>
+          Save
+        </Button>
       </div>
     </div>
   );

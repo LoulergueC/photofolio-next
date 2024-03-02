@@ -180,13 +180,20 @@
 @media screen and (max-width: 600px) {
   .photo-container .photo-details {
     left: 50%;
+    transform: translate(-50%, -90%);
   }
   .photo-container .camera-details {
-    right: 50%;
+    transform: translate(10%, calc(100% - 10px));
+  }
+  .photo-container .tags {
+    transform: translate(-10%, calc(100% - 10px));
   }
   .photo-container .photo-details,
   .photo-container .camera-details {
     width: 70%;
+  }
+  .photo-container {
+    margin: 6rem;
   }
 }
 @media screen and (max-width: 300px) {
