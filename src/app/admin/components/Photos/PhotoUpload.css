@@ -65,7 +65,8 @@
   object-fit: contain;
 }
 .photo-container .photo-details,
-.photo-container .camera-details {
+.photo-container .camera-details,
+.photo-container .tags {
   position: absolute;
   display: flex;
   flex-direction: column;
@@ -89,6 +90,14 @@
   bottom: 0;
   right: 0;
   transform: translate(50%, 50%);
+}
+.photo-container .tags {
+  bottom: 0;
+  left: 0;
+  transform: translate(-50%, 50%);
+  cursor: pointer;
+  flex-direction: row;
+  gap: 0.25rem;
 }
 .photo-container .photo-details > div,
 .photo-container .camera-details > div {
