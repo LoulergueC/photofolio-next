@@ -56,7 +56,7 @@ export const addPhotos = async (
         description: description,
         id: id,
         tags: [],
-        model: model,
+        model: { name: model },
         aperture: aperture,
         exposureTime: exposureTime,
         iso: iso,

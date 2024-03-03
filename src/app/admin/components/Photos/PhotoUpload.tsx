@@ -101,7 +101,7 @@ export interface Photo {
   description: string;
   id: string;
   tags: Tag[];
-  model: string;
+  model: Model;
   aperture: string;
   exposureTime: string;
   iso: string;
@@ -110,4 +110,9 @@ export interface Photo {
 export interface Tag {
   name: string;
   id: number;
+}
+
+export interface Model {
+  name: string;
+  id?: number;
 }

@@ -1,10 +1,10 @@
 import db from "@/db/db";
 
 export async function GET() {
-  const tags = await db.tag.findMany();
+  const models = await db.model.findMany();
 
-  if (!tags) {
-    return new Response(JSON.stringify({ error: "Tags not found" }), {
+  if (!models.length || !models) {
+    return new Response(JSON.stringify({ error: "Models not found" }), {
       status: 404,
       headers: {
         "Content-Type": "application/json",
@@ -12,7 +12,7 @@ export async function GET() {
     });
   }
 
-  return new Response(JSON.stringify(tags), {
+  return new Response(JSON.stringify(models), {
     status: 200,
     headers: {
       "Content-Type": "application/json",
@@ -24,7 +24,7 @@ export async function POST(req: Request) {
   const body = await req.json();
 
   if (!body.name) {
-    return new Response(JSON.stringify({ error: "Tag name is required" }), {
+    return new Response(JSON.stringify({ error: "Model name is required" }), {
       status: 400,
       headers: {
         "Content-Type": "application/json",
@@ -32,10 +32,18 @@ export async function POST(req: Request) {
     });
   }
 
-  const tag = await db.tag.create({ data: { name: body.name } });
+  const model = await db.model.upsert({
+    where: {
+      name: body.name,
+    },
+    update: {},
+    create: {
+      name: body.name,
+    },
+  });
 
-  if (!tag) {
-    return new Response(JSON.stringify({ error: "Tag not created : Unknown error" }), {
+  if (!model) {
+    return new Response(JSON.stringify({ error: "Model not created : Unknown error" }), {
       status: 500,
       headers: {
         "Content-Type": "application/json",
@@ -43,7 +51,7 @@ export async function POST(req: Request) {
     });
   }
 
-  return new Response(JSON.stringify(tag), {
+  return new Response(JSON.stringify(model), {
     status: 201,
     headers: {
       "Content-Type": "application/json",

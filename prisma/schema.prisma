@@ -51,13 +51,11 @@ model Photo {
 model Tag {
   id     Int     @id @default(autoincrement())
   photos Photo[]
-
-  name String
+  name   String  @unique
 }
 
 model Model {
   id     Int     @id @default(autoincrement())
   photos Photo[]
-
-  name String
+  name   String  @unique
 }

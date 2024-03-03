@@ -91,6 +91,18 @@
   right: 0;
   transform: translate(50%, 50%);
 }
+.photo-container .camera-details .model__select {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 0.25rem;
+}
+.photo-container .camera-details .model__select select {
+  background: transparent;
+  color: white;
+  border: 1px solid;
+  border-radius: 0.25rem;
+}
 .photo-container .tags {
   bottom: 0;
   left: 0;

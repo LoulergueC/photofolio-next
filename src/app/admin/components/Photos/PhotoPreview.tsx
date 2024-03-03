@@ -5,13 +5,17 @@ import isoIcon from "../../../../../public/icons/iso.svg";
 import modelIcon from "../../../../../public/icons/camera.svg";
 import apertureIcon from "../../../../../public/icons/aperture.svg";
 import exposureTimeIcon from "../../../../../public/icons/timer.svg";
-import { Photo, Tag } from "./PhotoUpload";
+import { Photo, Tag, Model } from "./PhotoUpload";
 import { useEffect, useState } from "react";
 import TagsModal from "./TagsModal";
+import { modelsAtom } from "@/app/lib/atoms/modelsAtom";
+import { useAtom } from "jotai";
 
 export default function PhotoPreview({ photo, setPhotos, handleInputChange, ...props }: any) {
   const [displayTagsModal, setDisplayTagsModal] = useState(false);
   const [tagsAlreadySet, setTagsAlreadySet] = useState<Tag[]>(photo.tags);
+  const [models, setModels] = useAtom(modelsAtom);
+  const [customModel, setCustomModel] = useState(false);
 
   useEffect(() => {
     setPhotos((photos: Photo[]) =>
@@ -23,6 +27,38 @@ export default function PhotoPreview({ photo, setPhotos, handleInputChange, ...p
       })
     );
   }, [tagsAlreadySet, photo.id, setPhotos]);
+
+  useEffect(() => {
+    if (!models.length) {
+      fetch("/api/models")
+        .then((res) => res.json())
+        .then((models) => setModels(models));
+    }
+  }, [models.length, setModels]);
+
+  useEffect(() => {
+    const modelExists = models.some((model) => model.name === photo.model.name);
+    setCustomModel(!modelExists);
+  }, [models, photo.model, setCustomModel]);
+
+  const handleSelectModel = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const modelName = e.target.value;
+
+    if (modelName === "addNewModel") return setCustomModel(true);
+
+    setCustomModel(false);
+
+    const modelId = models.find((model) => model.name === modelName)?.id;
+
+    setPhotos((photos: Photo[]) =>
+      photos.map((p) => {
+        if (p.id === photo.id) {
+          return { ...p, model: { name: modelName, id: modelId } };
+        }
+        return p;
+      })
+    );
+  };
 
   return (
     <div className="photo-container">
@@ -82,15 +118,35 @@ export default function PhotoPreview({ photo, setPhotos, handleInputChange, ...p
           <label htmlFor="model">
             <Image src={modelIcon} alt="model" />
           </label>
-          <input
-            type="text"
-            name="model"
-            id="model"
-            data-id={photo.id}
-            onChange={handleInputChange}
-            value={photo.model}
-            size={photo.model.length || 2}
-          />
+          <div className="model__select">
+            <select
+              name="model"
+              id="model"
+              data-id={photo.id}
+              onChange={handleSelectModel}
+              value={photo.model.name || "addNewModel"}>
+              <option value="addNewModel" onSelect={() => setCustomModel(true)}>
+                New model
+              </option>
+              {models.length > 0 &&
+                models.map((model: Model) => (
+                  <option key={model.id} value={model.name}>
+                    {model.name}
+                  </option>
+                ))}
+            </select>
+            {customModel && (
+              <input
+                type="text"
+                name="model"
+                id="model"
+                data-id={photo.id}
+                onChange={handleInputChange}
+                value={photo.model.name}
+                size={photo.model.length || 2}
+              />
+            )}
+          </div>
         </div>
         <div>
           <label htmlFor="aperture">
