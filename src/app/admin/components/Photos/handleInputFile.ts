@@ -38,7 +38,7 @@ export const addPhotos = async (
     const promises = cleanedPhotos.map(async (photo) => {
       const exif = await extractExif(photo);
 
-      const { model, aperture, exposureTime, iso, description } = exif;
+      const { model, aperture, exposureTime, iso, description, height, width } = exif;
 
       const arrayBuffer = await reader(photo);
 
@@ -60,6 +60,8 @@ export const addPhotos = async (
         aperture: aperture,
         exposureTime: exposureTime,
         iso: iso,
+        height: height,
+        width: width,
       };
     });
 

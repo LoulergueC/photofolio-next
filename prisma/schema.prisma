@@ -38,14 +38,14 @@ model Photo {
 
   url          String
   width        Int
-  heigth       Int
+  height       Int
   name         String
-  description  String
-  model        Model  @relation(fields: [modelId], references: [id])
+  description  String?
+  model        Model   @relation(fields: [modelId], references: [id])
   modelId      Int
-  aperture     String
-  exposureTime String
-  iso          String
+  aperture     String?
+  exposureTime String?
+  iso          String?
 }
 
 model Tag {

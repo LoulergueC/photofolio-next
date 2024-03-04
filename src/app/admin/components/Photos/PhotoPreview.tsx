@@ -38,8 +38,19 @@ export default function PhotoPreview({ photo, setPhotos, handleInputChange, ...p
 
   useEffect(() => {
     const modelExists = models.some((model) => model.name === photo.model.name);
+    if (modelExists) {
+      setPhotos((photos: Photo[]) =>
+        photos.map((p) => {
+          if (p.id === photo.id) {
+            return { ...p, model: models.find((model) => model.name === photo.model.name) };
+          }
+          return p;
+        })
+      );
+    }
+
     setCustomModel(!modelExists);
-  }, [models, photo.model, setCustomModel]);
+  }, [models, photo.id, photo.model, setPhotos, setCustomModel]);
 
   const handleSelectModel = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const modelName = e.target.value;
@@ -115,13 +126,13 @@ export default function PhotoPreview({ photo, setPhotos, handleInputChange, ...p
 
       <div className="camera-details">
         <div>
-          <label htmlFor="model">
+          <label htmlFor="modelSelect">
             <Image src={modelIcon} alt="model" />
           </label>
           <div className="model__select">
             <select
               name="model"
-              id="model"
+              id="modelSelect"
               data-id={photo.id}
               onChange={handleSelectModel}
               value={photo.model.name || "addNewModel"}>
@@ -139,7 +150,6 @@ export default function PhotoPreview({ photo, setPhotos, handleInputChange, ...p
               <input
                 type="text"
                 name="model"
-                id="model"
                 data-id={photo.id}
                 onChange={handleInputChange}
                 value={photo.model.name}

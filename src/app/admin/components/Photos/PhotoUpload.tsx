@@ -7,17 +7,27 @@ import Button from "../Button/Button";
 import { addPhotos } from "./handleInputFile";
 import PhotoPreview from "./PhotoPreview";
 
+import { modelsAtom } from "@/app/lib/atoms/modelsAtom";
+import { useSetAtom } from "jotai";
+
 export default function PhotoUpload() {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [errors, setErrors] = useState<String[]>([]);
+  const setModels = useSetAtom(modelsAtom);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = event.target;
     const id = event.target.dataset.id;
+
+    let modelValue: Model | undefined;
+    if (name === "model") {
+      modelValue = { name: value };
+    }
+
     setPhotos((prevPhotos) =>
       prevPhotos.map((photo) => {
         if (photo.id === id) {
-          return { ...photo, [name]: value };
+          return { ...photo, [name]: modelValue ? modelValue : value };
         }
         return photo;
       })
@@ -25,6 +35,34 @@ export default function PhotoUpload() {
   };
 
   const upload = async () => {
+    const modelsToCreate = new Set(
+      photos.map((photo: Photo) => {
+        if (!photo.model.id) return photo.model.name;
+      })
+    );
+
+    // Create an array of promises for model creation
+    const createModelPromises = Array.from(modelsToCreate).map((modelName) =>
+      fetch("/api/models", {
+        method: "POST",
+        body: JSON.stringify({ name: modelName as string }),
+      }).then((res) => res.json())
+    );
+
+    // Wait for all model creation promises to resolve
+    const createdModels = await Promise.all(createModelPromises);
+
+    // Update photo models with the newly created model IDs
+    createdModels.forEach((model) => {
+      photos.forEach((photo) => {
+        if (photo.model.name === model.name) {
+          photo.model.id = model.id;
+        }
+      });
+      setModels((prevModels) => [...prevModels, model]);
+    });
+
+    // After all models are created and photos are updated, send the photos
     const response = await fetch("/api/photos", {
       method: "POST",
       body: JSON.stringify(photos),
@@ -105,6 +143,8 @@ export interface Photo {
   aperture: string;
   exposureTime: string;
   iso: string;
+  height: number;
+  width: number;
 }
 
 export interface Tag {
